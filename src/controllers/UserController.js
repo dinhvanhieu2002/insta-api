@@ -15,9 +15,27 @@ const getByUsername = async (req, res) => {
   }
 };
 
+const getInfo = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) return res.status(400).json({ message: "User is not exits" });
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const signup = async (req, res) => {
   try {
-    const { username, fullname, email, password } = req.body;
+    const {
+      username,
+      fullname,
+      email,
+      password,
+      avatar = "https://res.cloudinary.com/dgvb3ulgi/image/upload/v1673277818/avatars/no-avatar_l8c2wl.png",
+    } = req.body;
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({
@@ -32,8 +50,7 @@ const signup = async (req, res) => {
       username,
       fullname,
       email,
-      avatar:
-        "https://res.cloudinary.com/dgvb3ulgi/image/upload/v1673277818/avatars/no-avatar_l8c2wl.png",
+      avatar,
       password: passwordHash,
     });
 
@@ -91,16 +108,14 @@ const search = async (req, res) => {
 
 const getSuggestedUser = async (req, res) => {
   try {
-    const { userId } = req.params;
-
-    const user = await User.findById(userId);
-    const following = user.following;
+    const following = req.user.following;
 
     const result = await User.find({}).limit(10);
 
     const suggestedUser = result
       .filter(
-        (profile) => profile.id !== userId && !following.includes(profile.id)
+        (profile) =>
+          profile.id !== req.user._id && !following.includes(profile.id)
       )
       .splice(0, 5);
 
@@ -149,4 +164,5 @@ module.exports = {
   updateFollowUser,
   getSuggestedUser,
   getByUsername,
+  getInfo,
 };

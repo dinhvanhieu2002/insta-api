@@ -56,18 +56,18 @@ router.post(
   userController.signup
 );
 
-router.get("/search", userController.search);
+router.get("/search", tokenMiddleware.auth, userController.search);
 
-router.get(
-  "/:userId/suggested",
-  tokenMiddleware.auth,
-  userController.getSuggestedUser
-);
+router.get("/suggested", tokenMiddleware.auth, userController.getSuggestedUser);
 
 router.put(
   "/update-follow",
   tokenMiddleware.auth,
   userController.updateFollowUser
 );
+
+router.get("/info", tokenMiddleware.auth, userController.getInfo);
+
+router.get("/:username", tokenMiddleware.auth, userController.getByUsername);
 
 module.exports = router;
